@@ -1,82 +1,28 @@
-/**
- * @file elevator.hpp
- * @author Logan Caffey
- * @brief Elevator definitions
- * 
- */
-
 #ifndef ELEVATOR_HPP
 #define ELEVATOR_HPP
 
 #include <cstdint>
 #include <vector>
 
-/**
- * @brief An Elevator Class that simulates an elevator
- * 
- */
-class Elevator{
-    public:
-    /**
-     * @brief Construct a new Elevator object
-     * 
-     * @param currentFloor 
-     */
-    Elevator(const int32_t currentFloor);
-    /**
-     * @brief Moves the elevator to the target floor
-     * 
-     * @param targetFloor 
-     */
-    void Move(const int32_t targetFloor);
-    /**
-     * @brief adds a destination/target to the elevator
-     * 
-     * @param targetFloor 
-     */
-    void AddDestination(const int32_t targetFloor);
-    /**
-     * @brief tells the elevator to visit all target floors in its current list
-     * 
-     */
+class Elevator {
+public:
+    explicit Elevator(std::int32_t currentFloor);
+
+    void Move(std::int32_t targetFloor);
+    void AddDestination(std::int32_t targetFloor);
     void VisitAll();
-    /**
-     * @brief Visits all target floors using a greedy "nearest next stop" scheduler.
-     *
-     * Reorders targets to reduce total travel time compared to FIFO visitation.
-     */
     void VisitAllNearest();
 
-    /**
-     * @brief Get the Travel Time object
-     * 
-     * @return uint32_t 
-     */
-    uint32_t GetTravelTime() const;
-    /**
-     * @brief Get the Visited object
-     * 
-     * @return std::vector<int32_t> 
-     */
-    std::vector<int32_t> GetVisited() const;
-    // needed for testing
-    /**
-     * @brief Get the Current Floor object
-     * 
-     * @return int32_t 
-     */
-    int32_t GetCurrentFloor() const;
-    /**
-     * @brief Get the Targets object
-     * 
-     * @return std::vector<int32_t> 
-     */
-    std::vector<int32_t> GetTargets() const;
-    private:
-    int32_t currentFloor; // the floor the elevator is on
-    uint32_t travelTime; // the total travel time the elevator has done thus far
-    std::vector<int32_t> visited; // a vector of visited floors in order
-    std::vector<int32_t> targets; // a vector of to be visited floors in order
+    [[nodiscard]] std::uint64_t GetTravelTime() const;
+    [[nodiscard]] std::vector<std::int32_t> GetVisited() const;
+    [[nodiscard]] std::int32_t GetCurrentFloor() const;
+    [[nodiscard]] std::vector<std::int32_t> GetTargets() const;
+
+private:
+    std::int32_t currentFloor;
+    std::uint64_t travelTime{0};
+    std::vector<std::int32_t> visited;
+    std::vector<std::int32_t> targets;
 };
 
 #endif

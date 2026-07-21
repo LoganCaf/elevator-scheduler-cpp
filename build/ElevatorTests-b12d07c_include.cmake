@@ -1,5 +1,0 @@
-if(EXISTS "/home/warpc/Nextcloud/code/c++/2025/Elevator/build/ElevatorTests-b12d07c_tests.cmake")
-  include("/home/warpc/Nextcloud/code/c++/2025/Elevator/build/ElevatorTests-b12d07c_tests.cmake")
-else()
-  add_test(ElevatorTests_NOT_BUILT-b12d07c ElevatorTests_NOT_BUILT-b12d07c)
-endif()

@@ -85,3 +85,11 @@ TEST_CASE("Elevator moves to itself", "[ElevatorMove]") {
     REQUIRE(elevator.GetVisited() == visited);
     REQUIRE(elevator.GetTargets() == std::vector<int32_t>());
 }
+
+TEST_CASE("Elevator tracks travel across the full 32-bit floor range", "[ElevatorMove]") {
+    Elevator elevator(INT32_MIN);
+    elevator.Move(INT32_MAX);
+
+    REQUIRE(elevator.GetCurrentFloor() == INT32_MAX);
+    REQUIRE(elevator.GetTravelTime() == 42949672950ULL);
+}

@@ -1,79 +1,73 @@
-/**
- * @file elevator.cpp
- * @author Logan Caffey
- * @brief Elevator class code
- * 
- */
-
-#include <cstdint>
-#include <cstddef>
-#include <vector>
 #include "elevator.hpp"
 
-Elevator::Elevator(const int32_t currentFloor){
-    this->currentFloor = currentFloor;
-    travelTime = 0;
+#include <cstddef>
+#include <cstdint>
+
+namespace {
+constexpr std::uint64_t travelTimePerFloor = 10;
+
+std::uint64_t floorDistance(std::int32_t first, std::int32_t second) {
+    const auto difference = static_cast<std::int64_t>(first) - static_cast<std::int64_t>(second);
+    return static_cast<std::uint64_t>(difference < 0 ? -difference : difference);
+}
+}  // namespace
+
+Elevator::Elevator(std::int32_t currentFloor) : currentFloor(currentFloor) {
     visited.push_back(currentFloor);
 }
 
-void Elevator::Move(const int32_t targetFloor){
-    if (targetFloor == currentFloor){ //dont move if at target
+void Elevator::Move(std::int32_t targetFloor) {
+    if (targetFloor == currentFloor) {
         return;
     }
-    if (targetFloor > currentFloor){ //move up  iuf target is above current
-        travelTime += (targetFloor - currentFloor) * 10;
-    }
-    else{ //move down if target is below current
-        travelTime += (currentFloor - targetFloor) * 10;
-    }
+
+    travelTime += floorDistance(targetFloor, currentFloor) * travelTimePerFloor;
     currentFloor = targetFloor;
     visited.push_back(currentFloor);
 }
 
-void Elevator::AddDestination(const int32_t targetFloor){
+void Elevator::AddDestination(std::int32_t targetFloor) {
     targets.push_back(targetFloor);
 }
 
-void Elevator::VisitAll(){
-    for (const int32_t target : targets){
+void Elevator::VisitAll() {
+    for (const std::int32_t target : targets) {
         Move(target);
     }
     targets.clear();
 }
 
-void Elevator::VisitAllNearest(){
-    while (!targets.empty()){
+void Elevator::VisitAllNearest() {
+    while (!targets.empty()) {
         std::size_t bestIndex = 0;
-        int64_t bestDiff = static_cast<int64_t>(targets[0]) - static_cast<int64_t>(currentFloor);
-        uint64_t bestDistance = static_cast<uint64_t>(bestDiff < 0 ? -bestDiff : bestDiff);
+        std::uint64_t bestDistance = floorDistance(targets.front(), currentFloor);
 
-        for (std::size_t i = 1; i < targets.size(); ++i){
-            const int64_t diff = static_cast<int64_t>(targets[i]) - static_cast<int64_t>(currentFloor);
-            const uint64_t distance = static_cast<uint64_t>(diff < 0 ? -diff : diff);
-            if (distance < bestDistance){
+        for (std::size_t index = 1; index < targets.size(); ++index) {
+            const std::uint64_t distance = floorDistance(targets[index], currentFloor);
+            if (distance < bestDistance) {
                 bestDistance = distance;
-                bestIndex = i;
+                bestIndex = index;
             }
         }
 
-        const int32_t nextStop = targets[bestIndex];
+        const std::int32_t nextStop = targets[bestIndex];
         targets.erase(targets.begin() + static_cast<std::ptrdiff_t>(bestIndex));
         Move(nextStop);
     }
 }
 
-int32_t Elevator::GetCurrentFloor() const{
+std::int32_t Elevator::GetCurrentFloor() const {
     return currentFloor;
 }
 
-uint32_t Elevator::GetTravelTime() const{
+std::uint64_t Elevator::GetTravelTime() const {
     return travelTime;
 }
 
-std::vector<int32_t> Elevator::GetVisited() const{
+std::vector<std::int32_t> Elevator::GetVisited() const {
     return visited;
 }
 
-std::vector<int32_t> Elevator::GetTargets() const{
+std::vector<std::int32_t> Elevator::GetTargets() const {
     return targets;
 }

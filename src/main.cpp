@@ -1,54 +1,67 @@
-/**
- * @file main.cpp
- * @author Logan Caffey
- * @brief Main function
- * 
- */
-
-#include <iostream>
-#include <cstdint>
-#include <string>
 #include "elevator.hpp"
 
-using namespace std;
+#include <cstdint>
+#include <iostream>
+#include <limits>
+#include <sstream>
+#include <stdexcept>
+#include <string>
 
-int main(){
-    int32_t start;
-    cout << "Enter your starting floor and hit Enter (floor range:-2147483648 - 2147483647)\n";
-    cin >> start;
-    Elevator elevator(start);
+namespace {
+std::int32_t parseFloor(const std::string& value) {
+    std::size_t parsedCharacters = 0;
+    const long long floor = std::stoll(value, &parsedCharacters);
+    if (parsedCharacters != value.size() || floor < std::numeric_limits<std::int32_t>::min() ||
+        floor > std::numeric_limits<std::int32_t>::max()) {
+        throw std::out_of_range("floor must be a 32-bit integer");
+    }
+    return static_cast<std::int32_t>(floor);
+}
+}  // namespace
 
-    string floors;
-    cout << "Enter the floors you want to go to separated by commas\n";
-    cin >> floors;
-    
-    string currentFloor;
-    for (const char c : floors){
-        if (c == ','){
-            elevator.AddDestination(stoi(currentFloor));
-            currentFloor = "";
+int main() {
+    try {
+        std::cout << "Starting floor: ";
+        std::string input;
+        std::getline(std::cin, input);
+        Elevator elevator(parseFloor(input));
+
+        std::cout << "Destination floors (comma separated): ";
+        std::getline(std::cin, input);
+        std::stringstream destinations(input);
+        std::string destination;
+        while (std::getline(destinations, destination, ',')) {
+            if (destination.empty()) {
+                throw std::invalid_argument("destination cannot be empty");
+            }
+            elevator.AddDestination(parseFloor(destination));
         }
-        else{
-            currentFloor += c;
+
+        if (elevator.GetTargets().empty()) {
+            throw std::invalid_argument("enter at least one destination");
         }
-    }
-    elevator.AddDestination(stoi(currentFloor));
 
-    string optimize;
-    cout << "Optimize route? (y/n)\n";
-    cin >> optimize;
-    if (!optimize.empty() && (optimize[0] == 'y' || optimize[0] == 'Y')){
-        elevator.VisitAllNearest();
-    } else {
-        elevator.VisitAll();
-    }
-    cout << "travel time: " << elevator.GetTravelTime() << " floors visited: ";
-    cout << elevator.GetVisited().at(0);
-    for (uint32_t ind=1;ind<elevator.GetVisited().size();++ind){
-        cout << ',' << elevator.GetVisited().at(ind);
-    }
-    cout << '\n';
+        std::cout << "Optimize route? (y/n): ";
+        std::getline(std::cin, input);
+        if (!input.empty() && (input.front() == 'y' || input.front() == 'Y')) {
+            elevator.VisitAllNearest();
+        } else {
+            elevator.VisitAll();
+        }
 
+        const auto visited = elevator.GetVisited();
+        std::cout << "Travel time: " << elevator.GetTravelTime() << "\nFloors visited: ";
+        for (std::size_t index = 0; index < visited.size(); ++index) {
+            if (index > 0) {
+                std::cout << ',';
+            }
+            std::cout << visited[index];
+        }
+        std::cout << '\n';
+    } catch (const std::exception& error) {
+        std::cerr << "Invalid input: " << error.what() << '\n';
+        return 1;
+    }
 
     return 0;
 }

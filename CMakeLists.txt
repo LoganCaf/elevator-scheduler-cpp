@@ -1,30 +1,40 @@
-cmake_minimum_required(VERSION 3.10)
-project(Elevator)
+cmake_minimum_required(VERSION 3.20)
+project(ElevatorScheduler VERSION 1.0 LANGUAGES CXX)
 
-# Set C++ standard
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Add the main executable
-add_executable(Elevator src/main.cpp src/elevator.cpp)
+add_library(elevator_core src/elevator.cpp)
+target_include_directories(elevator_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-# Enable testing
-enable_testing()
+add_executable(elevator src/main.cpp)
+target_link_libraries(elevator PRIVATE elevator_core)
 
-# Download Catch2 via CMake’s FetchContent
-include(FetchContent)
-FetchContent_Declare(
-  catch2
-  GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-  GIT_TAG v3.8.0
-)
-FetchContent_MakeAvailable(catch2)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  target_compile_options(elevator_core PRIVATE -Wall -Wextra -Wpedantic)
+endif()
 
-# Add a test executable
-add_executable(ElevatorTests tests/elevatorTestsAddTarget.cpp  tests/elevatorTestsInit.cpp  tests/elevatorTestsMove.cpp  tests/elevatorTestsVisitAll.cpp tests/elevatorTestsVisitAllNearest.cpp src/elevator.cpp)
-target_link_libraries(ElevatorTests PRIVATE Catch2::Catch2WithMain)
-
-# Register the test with CTest
 include(CTest)
-include(Catch)
-catch_discover_tests(ElevatorTests)
+if(BUILD_TESTING)
+  include(FetchContent)
+  FetchContent_Declare(
+    Catch2
+    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+    GIT_TAG v3.8.0
+  )
+  FetchContent_MakeAvailable(Catch2)
+
+  add_executable(
+    elevator_tests
+    tests/elevatorTestsAddTarget.cpp
+    tests/elevatorTestsInit.cpp
+    tests/elevatorTestsMove.cpp
+    tests/elevatorTestsVisitAll.cpp
+    tests/elevatorTestsVisitAllNearest.cpp
+  )
+  target_link_libraries(elevator_tests PRIVATE elevator_core Catch2::Catch2WithMain)
+
+  include(Catch)
+  catch_discover_tests(elevator_tests)
+endif()
